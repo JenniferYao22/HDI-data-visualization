@@ -19,7 +19,7 @@ function useData(csvPath) {
                     GNI: {},
                     LEB: {},
                     EYS: {},
-                    countryName: d.Country
+                    countryName: d.Country 
                 };
                 Object.keys(d).forEach(key => {
                     if (key.includes('Human Development Index')) {
@@ -63,7 +63,7 @@ const LineChart = ({ data, selectedCountry }) => {
         const yScale = scaleLinear().domain([0, 1]).range([height - margin.bottom, margin.top]);
         const colorScale = scaleLinear()
             .domain([0.3, 0.5, 0.6, 0.7, 0.85])
-            .range(["#bd1d1a", "#fb8c00", "#fdd835", "#12750e", "#1d1ac9"]);
+            .range(["#bd1d1a", "#fb8c00", "#fdd835", "#12750e", "#1d1ac9"]); 
         const lineGenerator = line().defined(d => d.value !== 0).x(d => xScale(new Date(d.year, 0, 1))).y(d => yScale(d.value));
         svg.append("g").attr("class", "x-axis").attr("transform", `translate(0,${height - margin.bottom})`).call(axisBottom(xScale).ticks(5).tickFormat(timeFormat("%Y")));
         svg.append("text").attr("text-anchor", "end").attr("x", width - margin.right).attr("y", height - margin.bottom + 30).text("Year").style("font-size", "12px");
@@ -86,9 +86,11 @@ const LineChart = ({ data, selectedCountry }) => {
             .attr("opacity", d => d.ISO3 === selectedCountry ? 1 : 0.2)
             .on("mouseover", (event, d) => {
                 select(event.currentTarget).attr("stroke-width", 2).attr("opacity", 1);
-                isoLabel.attr("x", event.pageX - svgRef.current.getBoundingClientRect().left + 10)
-                    .attr("y", event.pageY - svgRef.current.getBoundingClientRect().top + 10)
+                isoLabel.attr("x", event.pageX - svgRef.current.getBoundingClientRect().left +10)
+                    .attr("y", event.pageY - svgRef.current.getBoundingClientRect().top+10 )
                     .text(d.countryName)
+                    .style("font-size", "14px")
+                    .style("font-weight", "bold")
                     .style("opacity", 1);
             })
             .on("mouseout", (event, d) => {
@@ -104,7 +106,8 @@ const LineChart = ({ data, selectedCountry }) => {
                     .attr("x", xScale(new Date(lastPoint.year, 0, 1)) + 5)
                     .attr("y", yScale(lastPoint.value))
                     .attr("fill", "black")
-                    .style("font-size", "10px")
+                    .style("font-size", "11px")
+                    .style("font-weight", "bold")
                     .text(selectedCountry);
             }
         }
@@ -112,6 +115,7 @@ const LineChart = ({ data, selectedCountry }) => {
 
     return <svg ref={svgRef} width={500} height={250}><g className="x-axis" /><g className="y-axis" /></svg>;
 };
+
 const ScatterPlot = ({ data, year, selectedCountry, onCountrySelect }) => {
     const svgRef = useRef();
     useEffect(() => {
@@ -122,7 +126,7 @@ const ScatterPlot = ({ data, year, selectedCountry, onCountrySelect }) => {
         const width = 500;
         const height = 250;
         const margin = { top: 20, right: 20, bottom: 40, left: 60 };
-        const yearData = Array.from(data).map(([iso, { HDI, GNI, countryName }]) => ({ x: GNI[year], y: HDI[year], iso, countryName })).filter(d => d.x && d.y);
+        const yearData = Array.from(data).map(([iso, { HDI, GNI,countryName }]) => ({ x: GNI[year], y: HDI[year], iso ,countryName})).filter(d => d.x && d.y);
         const xScale = scaleLinear().domain([0, Math.max(...yearData.map(d => d.x))]).range([margin.left, width - margin.right]);
         const yScale = scaleLinear().domain([0, 1]).range([height - margin.bottom, margin.top]);
 
@@ -147,6 +151,18 @@ const ScatterPlot = ({ data, year, selectedCountry, onCountrySelect }) => {
             .attr('fill', d => d.iso === selectedCountry ? 'red' : 'grey')
             .on("click", d => onCountrySelect(d.iso))
             .on('mouseover', function (event, d) {
+
+
+    // Calculate adjusted positions for the label
+    const xPosition = xScale(d.x);
+    const yPosition = yScale(d.y) - 10;
+    const labelWidth = 100; // Estimate or calculate the width of your label
+    const labelHeight = 20; // Estimate or calculate the height of your label
+
+    // Adjust label positions to prevent clipping at edges
+    const adjustedX = xPosition + labelWidth + 5 > width ? xPosition - labelWidth - 5 : xPosition -15;
+    const adjustedY = yPosition - labelHeight < 0 ? yPosition + 5 : yPosition - 5;
+
                 select(this)
                     .raise()
                     .transition()
@@ -155,13 +171,14 @@ const ScatterPlot = ({ data, year, selectedCountry, onCountrySelect }) => {
                     .attr('stroke', 'red')
                     .attr('fill', 'red')
                     .attr('stroke-width', 2);
-                isoLabel.raise()
-                    .attr("x", xScale(d.x) + 5)
-                    .attr("y", yScale(d.y) + 4)
-                    .text(d.countryName)
-                    .style("opacity", 1)
-                    .style("font-size", "14px")
-                    .style("font-weight", "bold");
+               
+    isoLabel.raise()
+    .attr("x", adjustedX)
+    .attr("y", adjustedY)
+    .text(d.countryName)
+    .style("opacity", 1)
+    .style("font-size", "14px")
+    .style("font-weight", "bold");
 
             })
             .on('mouseout', function (event, d) {
@@ -247,7 +264,7 @@ const HDI = () => {
     const [year, setYear] = useState("2021");
     const [countryInfo, setCountryInfo] = useState({ name: "", HDI: null });
     const [notePosition, setNotePosition] = useState({ x: 0, y: 0 });
-    const svgWidth = 750; // Adjust based on your layout
+    const svgWidth = 750; 
     const svgHeight = 547;
     const legendTransformX = svgWidth - 220; // Adjust to fit within the SVG bounds
     const legendTransformY = svgHeight - 40; // Place it at the bottom
@@ -306,15 +323,16 @@ const HDI = () => {
     const chartData = Array.from(hdiData, ([ISO3, countryData]) => ({
         ISO3,
         values: Object.keys(countryData.HDI).map(year => ({ year: parseInt(year), value: countryData.HDI[year] })).sort((a, b) => a.year - b.year),
-        countryName: countryData.countryName
+        countryName: countryData.countryName 
     }));
 
     const projection = geoMercator().scale(150).translate([750 / 2, 547 / 2 + 50]);
     const pathGenerator = geoPath().projection(projection);
 
     const colorScale = scaleLinear()
-    .domain([0.3, 0.5, 0.6, 0.7, 0.85, 0.95, 1])  // Added a new stop at 0.95
-    .range(["#bd1d1a", "#fb8c00", "#fdd835", "#12750e", "#1d1ac9", "#3457D5", "#00ced1"]);  // Added teal at the end
+        .domain([0.3, 0.5, 0.6, 0.7, 0.85])
+        .range(["#bd1d1a", "#fb8c00", "#fdd835", "#12750e", "#1d1ac9","#3457D5"]); 
+
 
     return (
         <Container>
@@ -342,7 +360,7 @@ const HDI = () => {
                                 stroke="#000"
                                 onClick={(event) => handleCountryClick(feature.id, event)} />
                         ))}
-
+                        
                         <g transform={`translate(${legendTransformX}, ${legendTransformY})`}>
                             <ColorLegend colorScale={colorScale} />
                         </g>
